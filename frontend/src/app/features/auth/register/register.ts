@@ -1,50 +1,58 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from "@angular/common";
+import { Component, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from "rxjs";
+import { strongPasswordValidator } from "../../../shared/validators/custom-validators";
 
 @Component({
-    selector: 'pb-login',
-    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    selector: 'pb-register',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="auth-page">
       <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()">
-        <h1>Welcome back</h1>
-        <p class="subtitle">Log in to PulseBoard</p>
+        <h1>Create your account</h1>
+        <p class="subtitle">Join PulseBoard as a member</p>
+
+        <label>
+          Name
+          <input formControlName="name" placeholder="Jane Doe" />
+        </label>
 
         <label>
           Email
           <input type="email" formControlName="email" placeholder="you@company.com" />
-          @if (form.get('email')?.touched && form.get('email')?.invalid) {
-            <span class="field-error">A valid email is required.</span>
-          }
         </label>
 
         <label>
           Password
           <input type="password" formControlName="password" placeholder="••••••••" />
-          @if (form.get('password')?.touched && form.get('password')?.invalid) {
-            <span class="field-error">Password is required.</span>
+          @if (form.get('password')?.touched && form.get('password')?.hasError('strongPassword')) {
+            <span class="field-error">
+              Needs 8+ characters, an uppercase letter, and a number.
+            </span>
           }
         </label>
+
+        <label>
+          Confirm password
+          <input type="password" formControlName="confirmPassword" placeholder="••••••••" />
+        </label>
+
+        @if (form.touched && form.hasError('passwordMismatch')) {
+          <span class="field-error">Passwords do not match.</span>
+        }
 
         @if (error$ | async) {
           <div class="form-error">{{ error$ | async }}</div>
         }
 
         <button type="submit" [disabled]="form.invalid || (loading$ | async)">
-          {{ (loading$ | async) ? 'Logging in…' : 'Log in' }}
+          {{ (loading$ | async) ? 'Creating account…' : 'Create account' }}
         </button>
 
-        <p class="switch">
-          Don't have an account? <a routerLink="/register">Sign up</a>
-        </p>
-
-        <div class="demo-hint">
-          <strong>Demo accounts</strong> (password: <code>Password123!</code>)<br />
-          admin&#64;pulseboard.dev · manager&#64;pulseboard.dev · member&#64;pulseboard.dev
-        </div>
+        <p class="switch">Already have an account? <a routerLink="/login">Log in</a></p>
       </form>
     </div>
   `,
@@ -125,32 +133,19 @@ import { BehaviorSubject } from 'rxjs';
       .switch a {
         color: #a48dfd;
       }
-      .demo-hint {
-        margin-top: 12px;
-        padding: 10px 12px;
-        background: #1c1c24;
-        border-radius: 8px;
-        font-size: 11px;
-        color: #8b8b97;
-        line-height: 1.6;
-      }
-      .demo-hint code {
-        background: #26262f;
-        padding: 1px 4px;
-        border-radius: 4px;
-      }
     `,
   ],
-
 })
 
-export class Login {
+export class Register {
     private readonly fb = inject(FormBuilder);
 
     readonly form = this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required],
-    });
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, strongPasswordValidator()]],
+      confirmPassword: ['', [Validators.required]],
+    },);
 
     readonly error$ = new BehaviorSubject<string | null>(null);
     readonly loading$ = new BehaviorSubject(false);
@@ -159,4 +154,5 @@ export class Login {
         if (this.form.invalid) return;
         // TODO: wire up auth service
     }
+
 }
