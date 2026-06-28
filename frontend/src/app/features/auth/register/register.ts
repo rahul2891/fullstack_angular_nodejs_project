@@ -140,19 +140,29 @@ import { strongPasswordValidator } from "../../../shared/validators/custom-valid
 export class Register {
     private readonly fb = inject(FormBuilder);
 
+    // readonly form = this.fb.group({
+    //   name: ['', [Validators.required, Validators.minLength(2)]],
+    //   email: ['', [Validators.required, Validators.email]],
+    //   password: ['', [Validators.required, strongPasswordValidator()]],
+    //   confirmPassword: ['', [Validators.required]],
+    // },);
+
     readonly form = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, strongPasswordValidator()]],
-      confirmPassword: ['', [Validators.required]],
-    },);
+  name: ['Rahul'],
+  email: [{ value: 'rahul@gmail.com', disabled: true }],
+  password: ['Test@123'],
+  confirmPassword: ['Test@123']
+});
 
     readonly error$ = new BehaviorSubject<string | null>(null);
     readonly loading$ = new BehaviorSubject(false);
 
     submit(): void {
-        if (this.form.invalid) return;
-        // TODO: wire up auth service
-    }
+
+  console.log('value:', this.form.value);
+
+  console.log('getRawValue():', this.form.getRawValue());
+
+}
 
 }
