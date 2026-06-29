@@ -31,7 +31,7 @@ export const appConfig: ApplicationConfig = {
 
     provideStore({
       auth: authReducer,
-      // projects: projectsReducer,
+      projects: projectsReducer,
       // issues: issuesReducer,
       // ui: uiReducer,
       // router: routerReducer,
