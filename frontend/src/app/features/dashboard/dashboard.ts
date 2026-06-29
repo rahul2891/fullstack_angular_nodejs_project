@@ -1,10 +1,10 @@
 import { CommonModule } from "@angular/common";
 import { Component } from "@angular/core";
-import { RouterLink } from "@angular/router";
+// import { RouterLink } from "@angular/router";
 
 @Component({
     selector: 'pb-dashboard',
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule],
   template: `
     <div class="page">
       <h1>Welcome back, Rahul 👋</h1>

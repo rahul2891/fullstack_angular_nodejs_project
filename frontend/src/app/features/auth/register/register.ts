@@ -2,8 +2,10 @@ import { CommonModule } from "@angular/common";
 import { Component, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { BehaviorSubject } from "rxjs";
-import { strongPasswordValidator } from "../../../shared/validators/custom-validators";
+import { passwordsMatchValidator, strongPasswordValidator } from "../../../shared/validators/custom-validators";
+import { AuthActions } from "../../../store/auth/auth.actions";
+import { Store } from "@ngrx/store";
+import { selectAuthError, selectAuthLoading } from "../../../store/auth/auth.selectors";
 
 @Component({
     selector: 'pb-register',
@@ -139,30 +141,28 @@ import { strongPasswordValidator } from "../../../shared/validators/custom-valid
 
 export class Register {
     private readonly fb = inject(FormBuilder);
+  private readonly store = inject(Store);
 
-    // readonly form = this.fb.group({
-    //   name: ['', [Validators.required, Validators.minLength(2)]],
-    //   email: ['', [Validators.required, Validators.email]],
-    //   password: ['', [Validators.required, strongPasswordValidator()]],
-    //   confirmPassword: ['', [Validators.required]],
-    // },);
+  readonly loading$ = this.store.select(selectAuthLoading);
+  readonly error$ = this.store.select(selectAuthError);
 
-    readonly form = this.fb.group({
-  name: ['Rahul'],
-  email: [{ value: 'rahul@gmail.com', disabled: true }],
-  password: ['Test@123'],
-  confirmPassword: ['Test@123']
-});
+  readonly form = this.fb.nonNullable.group(
+    {
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, strongPasswordValidator()]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    { validators: [passwordsMatchValidator('password', 'confirmPassword')] }
+  );
 
-    readonly error$ = new BehaviorSubject<string | null>(null);
-    readonly loading$ = new BehaviorSubject(false);
-
-    submit(): void {
-
-  console.log('value:', this.form.value);
-
-  console.log('getRawValue():', this.form.getRawValue());
-
-}
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const { name, email, password } = this.form.getRawValue();
+    this.store.dispatch(AuthActions.register({ payload: { name, email, password } }));
+  }
 
 }

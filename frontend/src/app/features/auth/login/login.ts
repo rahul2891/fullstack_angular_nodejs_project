@@ -3,6 +3,9 @@ import { CommonModule } from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import { BehaviorSubject } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { selectAuthError, selectAuthLoading } from '../../../store/auth/auth.selectors';
+import { AuthActions } from '../../../store/auth/auth.actions';
 
 @Component({
     selector: 'pb-login',
@@ -145,18 +148,22 @@ import { BehaviorSubject } from 'rxjs';
 })
 
 export class Login {
-    private readonly fb = inject(FormBuilder);
+   private readonly fb = inject(FormBuilder);
+  private readonly store = inject(Store);
 
-    readonly form = this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required],
-    });
+  readonly loading$ = this.store.select(selectAuthLoading);
+  readonly error$ = this.store.select(selectAuthError);
 
-    readonly error$ = new BehaviorSubject<string | null>(null);
-    readonly loading$ = new BehaviorSubject(false);
+  readonly form = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]],
+  });
 
-    submit(): void {
-        if (this.form.invalid) return;
-        // TODO: wire up auth service
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
     }
+    this.store.dispatch(AuthActions.login({ payload: this.form.getRawValue() }));
+  }
 }
