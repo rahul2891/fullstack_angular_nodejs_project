@@ -1,4 +1,5 @@
-const { db } = require('../data/db')
+const { db } = require('../data/db');
+const { broadcastIssueEvent } = require('../sockets/realtime');
 
 function listIssues(req, res) {
     const {projectId, status, assigneedId, search } = req.query;
@@ -32,6 +33,8 @@ function createIssue(req, res) {
     labels,
     reporterId: req.user.id,
   });
+
+  broadcastIssueEvent('issue: created', issue);
 
    return res.status(201).json({ issue });
 }

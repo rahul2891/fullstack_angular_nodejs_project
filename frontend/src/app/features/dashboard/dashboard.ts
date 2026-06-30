@@ -1,36 +1,70 @@
 import { CommonModule } from "@angular/common";
-import { Component } from "@angular/core";
+import { Component, inject } from "@angular/core";
+import { Store } from "@ngrx/store";
+import { AuthService } from "../../core/services/auth.service";
+import { STATUS_LABELS } from "../../core/models/domain.models";
+import { selectAllIssues, selectIssuesLoading } from "../../store/issues/issues.selectors";
+import { selectAllProjects } from "../../store/projects/projects.selectors";
+import { combineLatest, map } from "rxjs";
+import { ProjectsActions } from "../../store/projects/projects.actions";
+import { IssuesActions } from "../../store/issues/issues.actions";
+import { RouterLink } from "@angular/router";
+import { RelativeTimePipe } from "../../shared/pipes/relative-time.pipe";
 // import { RouterLink } from "@angular/router";
 
 @Component({
     selector: 'pb-dashboard',
-    imports: [CommonModule],
+    imports: [CommonModule, RouterLink, RelativeTimePipe],
   template: `
     <div class="page">
-      <h1>Welcome back, Rahul 👋</h1>
+      <h1>Welcome back, {{ authService.currentUser()?.name }} 👋</h1>
 
       <div class="stats">
         <div class="stat-card">
-          <span class="value">Test</span>
+          <span class="value">{{ (myIssues$ | async)?.length ?? 0 }}</span>
           <span class="label">Assigned to you</span>
         </div>
         <div class="stat-card">
-          <span class="value">Project</span>
+          <span class="value">{{ (projects$ | async)?.length ?? 0 }}</span>
           <span class="label">Active projects</span>
         </div>
         <div class="stat-card">
-          <span class="value">Issue</span>
+          <span class="value">{{ doneCount$ | async }}</span>
           <span class="label">Issues done</span>
         </div>
       </div>
 
       <section>
         <h2>Your issues</h2>
+        @if (loading$ | async) {
+          <p class="muted">Loading…</p>
+        } @else if ((myIssues$ | async)?.length === 0) {
+          <p class="muted">No issues assigned to you yet. Nicely done, or suspiciously quiet.</p>
+        } @else {
+          <ul class="issue-list">
+            @for (issue of myIssues$ | async; track issue.id) {
+              <li [routerLink]="['/projects', issue.projectId, 'issues', issue.id]">
+                <span class="key">{{ issue.key }}</span>
+                <span class="title">{{ issue.title }}</span>
+                <span class="status" [attr.data-status]="issue.status">{{ statusLabels[issue.status] }}</span>
+                <span class="time">{{ issue.updatedAt | relativeTime }}</span>
+              </li>
+            }
+          </ul>
+        }
       </section>
 
       <section>
         <h2>Your projects</h2>
-
+        <div class="project-grid">
+          @for (project of projects$ | async; track project.id) {
+            <a class="project-card" [routerLink]="['/projects', project.id, 'board']">
+              <span class="project-key">{{ project.key }}</span>
+              <span class="project-name">{{ project.name }}</span>
+              <span class="project-desc">{{ project.description }}</span>
+            </a>
+          }
+        </div>
       </section>
     </div>
   `,
@@ -168,5 +202,30 @@ import { Component } from "@angular/core";
 })
 
 export class Dashboard {
+  private readonly store = inject(Store);
+  readonly authService = inject(AuthService);
+  readonly statusLabels = STATUS_LABELS;
+
+  readonly loading$ = this.store.select(selectIssuesLoading);
+  readonly projects$ = this.store.select(selectAllProjects);
+
+  readonly myIssues$ = combineLatest([
+    this.store.select(selectAllIssues),
+    // AuthService.currentUser is a signal; toObservable would be the
+    // "fully reactive" approach, but since we only need it once per
+    // combineLatest emission and a signal read is synchronous, reading it
+    // directly inside map() here is simpler and avoids importing
+    // toObservable just for this. (See README for a discussion of when
+    // to bridge signals -> observables instead.)
+  ]).pipe(map(([issues]) => issues.filter((i) => i.assigneeId === this.authService.currentUser()?.id)));
+
+  readonly doneCount$ = this.store
+    .select(selectAllIssues)
+    .pipe(map((issues) => issues.filter((i) => i.status === 'done').length));
+
+  ngOnInit(): void {
+    this.store.dispatch(ProjectsActions.loadProjects());
+    this.store.dispatch(IssuesActions.loadIssues({ filters: {} }));
+  }
 
 }

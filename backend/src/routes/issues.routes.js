@@ -1,7 +1,7 @@
 const express = require('express');
 const {
   listIssues,
-  getIssue,
+  getIssues,
   createIssue,
   updateIssue,
   deleteIssue,
@@ -15,10 +15,10 @@ const router = express.Router();
 
 router.use(requireAuth);
 
-outer.get('/check-title', checkTitleAvailable);
+router.get('/check-title', checkTitleAvailable);
 
 router.get('/', listIssues);
-router.get('/:id', getIssue);
+router.get('/:id', getIssues);
 router.post('/', createIssue);
 router.patch('/:id', updateIssue);
 router.delete('/:id', requireRole(db.ROLES.ADMIN, db.ROLES.MANAGER), deleteIssue);

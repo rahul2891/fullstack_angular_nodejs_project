@@ -6,7 +6,10 @@ const cors = require('cors')
 const morgan = require('morgan');
 const {Server} = require('socket.io');
 
-const authRoutes = require('./routes/auth.routes')
+const authRoutes     = require('./routes/auth.routes');
+const projectsRoutes = require('./routes/projects.routes');
+const issuesRoutes   = require('./routes/issues.routes');
+const usersRoutes    = require('./routes/users.routes');
 
 const PORT = process.env.PORT || 4000;
 const CORS_ORIGIN = (process.env.CORS_ORIGIN || 'https://localhost:4200').split(',');
@@ -21,7 +24,10 @@ app.get('/api/health', (req,res) => {
     res.json({ status: 'ok', timestam: new Date().toISOString() })
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth',     authRoutes);
+app.use('/api/projects', projectsRoutes);
+app.use('/api/issues',   issuesRoutes);
+app.use('/api/users',    usersRoutes);
 
 const server = http.createServer(app);
 const io = new Server(server, {

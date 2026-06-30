@@ -271,7 +271,7 @@ import { InitialsPipe } from '../../shared/pipes/initials.pipe';
     `,
   ],
 })
-export class IssueDetailComponent implements OnInit {
+export class IssueDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly store = inject(Store);

@@ -8,7 +8,7 @@ const router = express.Router()
 router.use(requireAuth);
 
 router.get('/', listProjects)
-router.ger('/:id', getProject)
+router.get('/:id', getProject)
 router.post('/', requireRole(db.ROLES.ADMIN, db.ROLES.MANAGER), createProject)
 
 module.exports = router

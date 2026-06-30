@@ -15,7 +15,7 @@ function requireAuth(req, res, next) {
         if(!user){
             return res.status(401).json({message: 'User no longer exists'})
         }
-        req,user = { id: user.id, email: user.email, name: user.name, role: user.role };
+        req.user = { id: user.id, email: user.email, name: user.name, role: user.role };
         return next();
         
     } catch (err) {

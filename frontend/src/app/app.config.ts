@@ -32,9 +32,9 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       auth: authReducer,
       projects: projectsReducer,
-      // issues: issuesReducer,
-      // ui: uiReducer,
-      // router: routerReducer,
+      issues: issuesReducer,
+      ui: uiReducer,
+      router: routerReducer,
     }),
     provideEffects([AuthEffects, ProjectsEffects, IssuesEffects]),
     provideRouterStore(),
