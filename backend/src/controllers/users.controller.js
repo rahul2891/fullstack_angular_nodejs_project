@@ -1,7 +1,8 @@
-const { db } = require('../data/db')
+const { db } = require('../data/db');
 
-function listUsers(req, res) {
-    return res.json({ users: db.listUsers() })
+async function listUsers(req, res) {
+  const users = await db.listUsers();
+  return res.json({ users });
 }
 
 module.exports = { listUsers };
