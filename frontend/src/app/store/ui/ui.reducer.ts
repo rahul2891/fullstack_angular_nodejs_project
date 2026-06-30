@@ -1,11 +1,18 @@
-import { createReducer } from '@ngrx/store';
+import { createReducer, on } from '@ngrx/store';
+import { UiActions } from './ui.actions';
 
 export interface UiState {
-  sidebarOpen: boolean;
+  sidebarCollapsed: boolean;
 }
 
-const initialState: UiState = {
-  sidebarOpen: true,
+export const initialUiState: UiState = {
+  sidebarCollapsed: false,
 };
 
-export const uiReducer = createReducer(initialState);
+export const uiReducer = createReducer(
+  initialUiState,
+  on(UiActions.toggleSidebar, (state) => ({
+    ...state,
+    sidebarCollapsed: !state.sidebarCollapsed,
+  }))
+);

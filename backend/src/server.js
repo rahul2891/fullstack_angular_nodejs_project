@@ -22,3 +22,17 @@ app.get('/api/health', (req,res) => {
 });
 
 app.use('/api/auth', authRoutes);
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: CORS_ORIGIN, credentials: true },
+});
+
+io.on('connection', (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+  socket.on('disconnect', () => console.log(`Socket disconnected: ${socket.id}`));
+});
+
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
